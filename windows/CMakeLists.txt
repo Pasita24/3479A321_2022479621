@@ -4,7 +4,7 @@ project(fultter_aplication_laboratorio LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
-set(BINARY_NAME "fultter_aplication_laboratorio")
+set(BINARY_NAME "flutter_aplication_1")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.
