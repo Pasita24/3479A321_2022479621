@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:logger/logger.dart';
+import 'package:fultter_aplication_laboratorio/Pages/AboutUsScreen.dart';
 
 class ListContent extends StatelessWidget {
   const ListContent({super.key});
@@ -114,12 +114,18 @@ class ListContent extends StatelessWidget {
               tooltip: 'Volver a Home',
               child: const Icon(Icons.home),
             ),
-            // Botón para ir a About (sin lógica)
+            // Botón para ir a AboutUsScreen
             FloatingActionButton(
               onPressed: () {
-                logger.i('About button pressed (no action)'); // Depuración
+                logger.i('Navigating to AboutUsScreen'); // Depuración
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AboutUsScreen(),
+                  ),
+                );
               },
-              tooltip: 'Ir a About Me',
+              tooltip: 'Ir a About Us',
               child: const Text('About'),
             ),
           ],
