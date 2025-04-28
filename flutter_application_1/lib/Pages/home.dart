@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:logger/logger.dart';
 import 'package:fultter_aplication_laboratorio/Pages/ListContent.dart';
+import 'package:fultter_aplication_laboratorio/Pages/AboutUsScreen.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -31,6 +32,22 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _counter = 0;
     });
+  }
+
+  void _navigateBasedOnCounter() {
+    if (_counter % 2 == 0) {
+      // Contador par: navegar a ListContent
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ListContent()),
+      );
+    } else {
+      // Contador impar: navegar a AboutUsScreen
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const AboutUsScreen()),
+      );
+    }
   }
 
   // Función para navegar a ListContent
@@ -99,6 +116,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     ElevatedButton(
                       onPressed: _resetCounter,
                       child: const Icon(Icons.refresh),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _navigateBasedOnCounter,
+                      child: const Text('Ir a Pantalla'),
                     ),
                   ],
                 ),
