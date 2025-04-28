@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:logger/logger.dart';
+import 'package:fultter_aplication_laboratorio/Pages/ListContent.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -32,10 +33,20 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  // Función para navegar a ListContent
+  void _navigateToListContent() {
+    Logger logger = Logger();
+    logger.i('Navigating to ListContent'); // Depuración
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ListContent()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Logger logger = Logger();
-    logger.i('Logger is working!');
+    logger.i('Home screen loaded'); // Depuración
 
     return Scaffold(
       appBar: AppBar(
@@ -55,7 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 SvgPicture.asset(
                   "Assets/Icons/Apple.svg",
                   semanticsLabel: 'Dart Logo',
-                  height: 100, // Ajusta el tamaño según necesites
+                  height: 100,
                 ),
                 const SizedBox(height: 16), // Espacio entre elementos
                 // Mensaje sobre Flutter
@@ -95,6 +106,14 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
         ),
+      ),
+      // Botón flotante para navegar a ListContent
+      floatingActionButton: FloatingActionButton(
+        onPressed: _navigateToListContent,
+        tooltip: 'Ver Servicios de Modelado 3D',
+        child: const Icon(
+          Icons.brush,
+        ), // Ícono más representativo para modelado
       ),
     );
   }
