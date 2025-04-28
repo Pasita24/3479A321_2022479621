@@ -78,10 +78,10 @@ class ListContent extends StatelessWidget {
                         // Imagen
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.all(8.0),
+                            padding: const EdgeInsets.all(4.0),
                             child: Image.asset(
                               services[index]['image']!,
-                              height: 100,
+                              height: 10,
                               fit: BoxFit.cover,
                             ),
                           ),
