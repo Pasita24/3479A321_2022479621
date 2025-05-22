@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:logger/logger.dart';
+import 'package:provider/provider.dart';
 import 'package:fultter_aplication_laboratorio/Pages/ListContent.dart';
 import 'package:fultter_aplication_laboratorio/Pages/AboutUsScreen.dart';
+import 'package:fultter_aplication_laboratorio/Provider/app_data.dart'; // NUEVO
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -10,39 +12,67 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MyHomePage> createState() {
+    print('create state');
+    return _MyHomePageState();
+  }
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+  _MyHomePageState() {
+    Logger().i('Constructor ejecutado - mounted: $mounted');
   }
 
-  void _decreaseCounter() {
-    setState(() {
-      _counter--;
-    });
+  @override
+  void initState() {
+    super.initState();
+    Logger().i('initState ejecutado');
   }
 
-  void _resetCounter() {
-    setState(() {
-      _counter = 0;
-    });
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    Logger().i('didChangeDependencies ejecutado');
+  }
+
+  @override
+  void setState(VoidCallback fn) {
+    super.setState(fn);
+    Logger().i('setState ejecutado');
+  }
+
+  @override
+  void didUpdateWidget(covariant MyHomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    Logger().i('didUpdateWidget ejecutado');
+  }
+
+  @override
+  void deactivate() {
+    super.deactivate();
+    Logger().i('deactivate ejecutado');
+  }
+
+  @override
+  void dispose() {
+    Logger().i('dispose ejecutado');
+    super.dispose();
+  }
+
+  @override
+  void reassemble() {
+    super.reassemble();
+    Logger().i('reassemble ejecutado');
   }
 
   void _navigateBasedOnCounter() {
-    if (_counter % 2 == 0) {
-      // Contador par: navegar a ListContent
+    final counter = context.read<AppData>().counter;
+    if (counter % 2 == 0) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const ListContent()),
       );
     } else {
-      // Contador impar: navegar a AboutUsScreen
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const AboutUsScreen()),
@@ -50,10 +80,9 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  // Función para navegar a ListContent
   void _navigateToListContent() {
     Logger logger = Logger();
-    logger.i('Navigating to ListContent'); // Depuración
+    logger.i('Navigating to ListContent');
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const ListContent()),
@@ -63,7 +92,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     Logger logger = Logger();
-    logger.i('Home screen loaded'); // Depuración
+    logger.i('Home screen loaded');
+
+    final appData = context.watch<AppData>();
 
     return Scaffold(
       appBar: AppBar(
@@ -72,52 +103,48 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: Card(
-          elevation: 4, // Sombra para dar profundidad
-          margin: const EdgeInsets.all(16.0), // Margen alrededor del Card
+          elevation: 4,
+          margin: const EdgeInsets.all(16.0),
           child: Padding(
-            padding: const EdgeInsets.all(16.0), // Espaciado interno
+            padding: const EdgeInsets.all(16.0),
             child: Column(
-              mainAxisSize: MainAxisSize.min, // Ajusta el tamaño al contenido
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // Imagen SVG
                 SvgPicture.asset(
                   "Assets/Icons/Apple.svg",
                   semanticsLabel: 'Dart Logo',
                   height: 100,
                 ),
-                const SizedBox(height: 16), // Espacio entre elementos
-                // Mensaje sobre Flutter
+                const SizedBox(height: 16),
                 const Text(
                   'Flutter es un framework de Google para crear aplicaciones multiplataforma con una sola base de código.',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 16),
-                // Contador
                 Text(
-                  'Contador: $_counter',
+                  'Contador: ${appData.counter}',
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 16),
-                // Botones en una fila
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton(
-                      onPressed: _incrementCounter,
+                      onPressed: () => appData.increment(),
                       child: const Icon(Icons.add),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
-                      onPressed: _decreaseCounter,
+                      onPressed: () => appData.decrement(),
                       child: const Icon(Icons.remove),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
-                      onPressed: _resetCounter,
+                      onPressed: () => appData.reset(),
                       child: const Icon(Icons.refresh),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(width: 16),
                     ElevatedButton(
                       onPressed: _navigateBasedOnCounter,
                       child: const Text('Ir a Pantalla'),
@@ -129,13 +156,10 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
       ),
-      // Botón flotante para navegar a ListContent
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToListContent,
         tooltip: 'Ver Servicios de Modelado 3D',
-        child: const Icon(
-          Icons.brush,
-        ), // Ícono más representativo para modelado
+        child: const Icon(Icons.brush),
       ),
     );
   }

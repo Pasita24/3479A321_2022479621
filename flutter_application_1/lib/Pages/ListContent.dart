@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
+import 'package:provider/provider.dart';
 import 'package:fultter_aplication_laboratorio/Pages/AboutUsScreen.dart';
+import 'package:fultter_aplication_laboratorio/Provider/app_data.dart';
 
 class ListContent extends StatelessWidget {
   const ListContent({super.key});
@@ -57,6 +59,22 @@ class ListContent extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Contador Global
+              Consumer<AppData>(
+                builder: (context, appData, child) {
+                  return Text(
+                    'Contador Global: ${appData.counter}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // Cuadrícula de servicios
+
               // Cuadrícula de servicios
               GridView.builder(
                 shrinkWrap: true, // Ajusta el tamaño al contenido
