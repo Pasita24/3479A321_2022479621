@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'Provider/app_data.dart'; // Asegúrate de que la ruta sea correcta
+import 'Provider/app_data.dart';
 import 'Pages/home.dart';
 
 void main() {

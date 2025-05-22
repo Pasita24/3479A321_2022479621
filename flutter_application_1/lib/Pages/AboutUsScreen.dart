@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
+import 'package:provider/provider.dart';
+import 'package:fultter_aplication_laboratorio/Provider/app_data.dart';
 
 class AboutUsScreen extends StatelessWidget {
   const AboutUsScreen({super.key});
@@ -8,6 +10,11 @@ class AboutUsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     Logger logger = Logger();
     logger.i('AboutUs screen loaded'); // Depuración
+
+    final appData = Provider.of<AppData>(context);
+    final TextEditingController nameController = TextEditingController(
+      text: appData.userName,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -75,7 +82,42 @@ class AboutUsScreen extends StatelessWidget {
               '• Atención personalizada para cada proyecto.',
               style: TextStyle(fontSize: 16),
             ),
-            const SizedBox(height: 50),
+            const SizedBox(height: 40),
+
+            // NUEVA SECCIÓN: Configuración del usuario
+            const Text(
+              'Configuración de Usuario',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: 'Nombre del Usuario',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                appData.setUserName(value);
+              },
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '¿Permitir reiniciar contador?',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Switch(
+                  value: appData.canReset,
+                  onChanged: (value) {
+                    appData.setCanReset(value);
+                  },
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 40),
             Center(
               child: ElevatedButton.icon(
                 onPressed: () {
