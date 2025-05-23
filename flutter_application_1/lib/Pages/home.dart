@@ -10,18 +10,21 @@ class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
   final String title;
-
   @override
-  State<MyHomePage> createState() {
-    print('create state');
-    return _MyHomePageState();
-  }
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
   _MyHomePageState() {
     Logger().i('Constructor ejecutado - mounted: $mounted');
   }
+  int _currentIndex = 0;
+
+  final List<Widget> _screens = [
+    const MyHomePage(title: 'Flutter Home'), // importante para recargar el home
+    const ListContent(),
+    const AboutUsScreen(),
+  ];
 
   @override
   void initState() {
@@ -100,6 +103,54 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Colors.blue),
+              child: Text(
+                'Menú de navegación',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Inicio'),
+              onTap: () {
+                Navigator.pop(context); // Cierra el Drawer
+                setState(() {
+                  _currentIndex = 0;
+                });
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.list),
+              title: const Text('Servicios'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ListContent()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.info),
+              title: const Text('Nosotros'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AboutUsScreen(),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
       body: Center(
         child: Card(

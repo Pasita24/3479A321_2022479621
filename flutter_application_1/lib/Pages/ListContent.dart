@@ -182,6 +182,7 @@ class ListContent extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             FloatingActionButton(
+              heroTag: 'boton_unico_1',
               onPressed: () {
                 logger.i('Volviendo a Home');
                 Navigator.pop(context);
@@ -190,6 +191,7 @@ class ListContent extends StatelessWidget {
               child: const Icon(Icons.home),
             ),
             FloatingActionButton(
+              heroTag: 'boton_unico_2',
               onPressed: () {
                 logger.i('Navegando a AboutUsScreen');
                 Navigator.push(
