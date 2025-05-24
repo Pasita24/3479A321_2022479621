@@ -216,25 +216,25 @@ class ListContent extends StatelessWidget {
       'title': 'Estilo Anime',
       'description':
           'Personajes vibrantes y estilizados inspirados en el anime, perfectos para RPGs y juegos narrativos.',
-      'image': 'assets/Image/Anime.jpg',
+      'image': 'Assets/Image/Anime.jpg',
     },
     {
       'title': 'Estilo Apocalíptico',
       'description':
           'Modelos robustos y detallados para mundos post-apocalípticos, ideales para juegos de supervivencia.',
-      'image': 'assets/Image/Apocalipsis.jpg',
+      'image': 'Assets/Image/Apocalipsis.jpg',
     },
     {
       'title': 'Estilo Shooter',
       'description':
           'Personajes dinámicos y optimizados para juegos de disparos en primera o tercera persona.',
-      'image': 'assets/Image/Shooter.jpg',
+      'image': 'Assets/Image/Shooter.jpg',
     },
     {
       'title': 'Estilo Medieval',
       'description':
           'Caballeros, magos y criaturas míticas diseñadas para aventuras de fantasía medieval.',
-      'image': 'assets/Image/Medevial.jpg',
+      'image': 'Assets/Image/Medevial.jpg',
     },
   ];
 }
