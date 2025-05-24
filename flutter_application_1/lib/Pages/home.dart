@@ -27,11 +27,19 @@ class _MyHomePageState extends State<MyHomePage> {
     const ListContent(),
     const AboutUsScreen(),
   ];
+  Future<void> _loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isResetEnabled = prefs.getBool('isResetEnabled') ?? false;
+
+    // Si usas un estado interno puedes usar setState aquí si lo necesitas
+    // Pero en tu caso estás usando Provider, así que solo necesitas este valor para el botón
+  }
 
   @override
   void initState() {
     super.initState();
     Logger().i('initState ejecutado');
+    _loadPreferences();
   }
 
   @override
@@ -161,7 +169,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   MaterialPageRoute(
                     builder: (context) => const PreferenciaScreen(),
                   ),
-                );
+                ).then((_) {
+                  _loadPreferences();
+                });
               },
             ),
           ],
