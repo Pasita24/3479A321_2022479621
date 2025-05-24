@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:fultter_aplication_laboratorio/Pages/ListContent.dart';
 import 'package:fultter_aplication_laboratorio/Pages/AboutUsScreen.dart';
 import 'package:fultter_aplication_laboratorio/Provider/app_data.dart'; // NUEVO
+import 'package:fultter_aplication_laboratorio/Pages/Preferencias.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -149,6 +151,19 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Preferencias'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PreferenciaScreen(),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -181,24 +196,46 @@ class _MyHomePageState extends State<MyHomePage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    ElevatedButton(
-                      onPressed: () => appData.increment(),
-                      child: const Icon(Icons.add),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => appData.increment(),
+                        child: const Icon(Icons.add),
+                      ),
                     ),
                     const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: () => appData.decrement(),
-                      child: const Icon(Icons.remove),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => appData.decrement(),
+                        child: const Icon(Icons.remove),
+                      ),
                     ),
                     const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: () => appData.reset(),
-                      child: const Icon(Icons.refresh),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final prefs = await SharedPreferences.getInstance();
+                          final isResetEnabled =
+                              prefs.getBool('isResetEnabled') ?? false;
+
+                          if (isResetEnabled) {
+                            appData.reset();
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('El reinicio está deshabilitado'),
+                              ),
+                            );
+                          }
+                        },
+                        child: const Icon(Icons.refresh),
+                      ),
                     ),
                     const SizedBox(width: 16),
-                    ElevatedButton(
-                      onPressed: _navigateBasedOnCounter,
-                      child: const Text('Ir a Pantalla'),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _navigateBasedOnCounter,
+                        child: const Text('Ir a Pantalla'),
+                      ),
                     ),
                   ],
                 ),
