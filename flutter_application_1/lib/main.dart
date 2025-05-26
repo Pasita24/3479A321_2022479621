@@ -3,7 +3,8 @@ import 'package:provider/provider.dart';
 import 'Provider/app_data.dart';
 import 'Pages/home.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     ChangeNotifierProvider(create: (_) => AppData(), child: const MyApp()),
   );
