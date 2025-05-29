@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'Provider/app_data.dart';
 import 'Pages/home.dart';
+import 'services/database_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await DatabaseHelper().initializeDatabase();
   runApp(
     ChangeNotifierProvider(create: (_) => AppData(), child: const MyApp()),
   );

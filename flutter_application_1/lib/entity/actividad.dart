@@ -1,21 +1,26 @@
 class Actividad {
   int? id;
-  String fecha;
+  DateTime fecha;
   String nombre;
 
   Actividad({this.id, required this.fecha, required this.nombre});
 
-  // Método para convertir la instancia a Map para insertar en DB
   Map<String, dynamic> toMap() {
-    var map = <String, dynamic>{'fecha': fecha, 'nombre': nombre};
+    var map = <String, dynamic>{
+      'fecha': fecha.toIso8601String(),
+      'nombre': nombre,
+    };
     if (id != null) {
       map['id'] = id;
     }
     return map;
   }
 
-  // Método para crear la instancia desde Map (DB a objeto)
   factory Actividad.fromMap(Map<String, dynamic> map) {
-    return Actividad(id: map['id'], fecha: map['fecha'], nombre: map['nombre']);
+    return Actividad(
+      id: map['id'],
+      fecha: DateTime.parse(map['fecha']),
+      nombre: map['nombre'],
+    );
   }
 }

@@ -4,9 +4,12 @@ import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:fultter_aplication_laboratorio/Pages/ListContent.dart';
 import 'package:fultter_aplication_laboratorio/Pages/AboutUsScreen.dart';
-import 'package:fultter_aplication_laboratorio/Provider/app_data.dart'; // NUEVO
+import 'package:fultter_aplication_laboratorio/Provider/app_data.dart';
 import 'package:fultter_aplication_laboratorio/Pages/Preferencias.dart';
+import 'package:fultter_aplication_laboratorio/Pages/actividades_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../entity/actividad.dart';
+import '../services/database_helper.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -21,18 +24,17 @@ class _MyHomePageState extends State<MyHomePage> {
     Logger().i('Constructor ejecutado - mounted: $mounted');
   }
   int _currentIndex = 0;
+  final DatabaseHelper _dbHelper = DatabaseHelper();
 
   final List<Widget> _screens = [
-    const MyHomePage(title: 'Flutter Home'), // importante para recargar el home
+    const MyHomePage(title: 'Flutter Home'),
     const ListContent(),
     const AboutUsScreen(),
   ];
+
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     final isResetEnabled = prefs.getBool('isResetEnabled') ?? false;
-
-    // Si usas un estado interno puedes usar setState aquí si lo necesitas
-    // Pero en tu caso estás usando Provider, así que solo necesitas este valor para el botón
   }
 
   @override
@@ -129,7 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
               leading: const Icon(Icons.home),
               title: const Text('Inicio'),
               onTap: () {
-                Navigator.pop(context); // Cierra el Drawer
+                Navigator.pop(context);
                 setState(() {
                   _currentIndex = 0;
                 });
@@ -174,6 +176,19 @@ class _MyHomePageState extends State<MyHomePage> {
                 });
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.history),
+              title: const Text('Actividades'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ActividadesScreen(),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -208,14 +223,34 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => appData.increment(),
+                        onPressed: () async {
+                          appData.increment();
+                          await _dbHelper.insertActivity(
+                            Actividad(
+                              fecha: DateTime.now(),
+                              nombre:
+                                  'Incrementó contador a ${appData.counter}',
+                            ),
+                          );
+                          logger.i('Actividad registrada: Incrementó contador');
+                        },
                         child: const Icon(Icons.add),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => appData.decrement(),
+                        onPressed: () async {
+                          appData.decrement();
+                          await _dbHelper.insertActivity(
+                            Actividad(
+                              fecha: DateTime.now(),
+                              nombre:
+                                  'Decrementó contador a ${appData.counter}',
+                            ),
+                          );
+                          logger.i('Actividad registrada: Decrementó contador');
+                        },
                         child: const Icon(Icons.remove),
                       ),
                     ),
@@ -229,6 +264,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
                           if (isResetEnabled) {
                             appData.reset();
+                            await _dbHelper.insertActivity(
+                              Actividad(
+                                fecha: DateTime.now(),
+                                nombre:
+                                    'Reinició contador a ${appData.counter}',
+                              ),
+                            );
+                            logger.i('Actividad registrada: Reinició contador');
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
