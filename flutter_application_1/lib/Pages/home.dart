@@ -10,6 +10,8 @@ import 'package:fultter_aplication_laboratorio/Pages/actividades_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../entity/actividad.dart';
 import '../services/database_helper.dart';
+import 'package:http/http.dart' as http;
+import 'dart:io';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -24,7 +26,9 @@ class _MyHomePageState extends State<MyHomePage> {
     Logger().i('Constructor ejecutado - mounted: $mounted');
   }
   int _currentIndex = 0;
+  int _imageCounter = 1; // Local counter for images
   final DatabaseHelper _dbHelper = DatabaseHelper();
+  String imageUrl = 'https://picsum.photos/250?image=1'; // Initial image URL
 
   final List<Widget> _screens = [
     const MyHomePage(title: 'Flutter Home'),
@@ -102,6 +106,34 @@ class _MyHomePageState extends State<MyHomePage> {
       context,
       MaterialPageRoute(builder: (context) => const ListContent()),
     );
+  }
+
+  Future<void> _getNewImage() async {
+    _imageCounter++; // Increment local image counter
+    final newImageUrl = 'https://picsum.photos/250?image=$_imageCounter';
+    try {
+      final response = await http.get(Uri.parse(newImageUrl));
+      if (response.statusCode == 200) {
+        setState(() {
+          imageUrl = newImageUrl;
+        });
+        await _dbHelper.insertActivity(
+          Actividad(
+            fecha: DateTime.now(),
+            nombre: 'Actualizó imagen a $newImageUrl',
+          ),
+        );
+        Logger().i('Actividad registrada: Actualizó imagen');
+      } else {
+        setState(() {
+          imageUrl = ''; // Clear the image URL
+        });
+      }
+    } catch (e) {
+      setState(() {
+        imageUrl = ''; // Clear the image URL
+      });
+    }
   }
 
   @override
@@ -201,6 +233,33 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                imageUrl.isNotEmpty
+                    ? Image.network(
+                      imageUrl,
+                      width: 250,
+                      height: 250,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Text(
+                            'Failed to load image',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        );
+                      },
+                    )
+                    : const Center(
+                      child: Text(
+                        'No image available',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _getNewImage,
+                  child: const Text('Update Image'),
+                ),
+                const SizedBox(height: 16),
                 SvgPicture.asset(
                   "Assets/Icons/Apple.svg",
                   semanticsLabel: 'Dart Logo',
