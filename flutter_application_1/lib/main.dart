@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'Provider/app_data.dart';
-import 'Pages/home.dart';
+import 'provider/app_data.dart';
+import 'pages/home.dart';
 import 'services/database_helper.dart';
 
 void main() async {
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Silkscreen',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
       ),
-      home: const MyHomePage(title: 'Aplicacion'),
+      home: const MyHomePage(title: 'Aplicación'),
     );
   }
 }
