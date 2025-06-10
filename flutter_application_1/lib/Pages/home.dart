@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:fultter_aplication_laboratorio/pages/AboutUsScreen.dart';
+import 'package:fultter_aplication_laboratorio/pages/ListContent.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:fultter_aplication_laboratorio/Pages/ListContent.dart';
-import 'package:fultter_aplication_laboratorio/Pages/AboutUsScreen.dart';
-import 'package:fultter_aplication_laboratorio/Provider/app_data.dart';
-import 'package:fultter_aplication_laboratorio/Pages/Preferencias.dart';
-import 'package:fultter_aplication_laboratorio/Pages/actividades_screen.dart';
+import 'package:fultter_aplication_laboratorio/provider/app_data.dart';
+import 'package:fultter_aplication_laboratorio/pages/preferencias.dart';
+import 'package:fultter_aplication_laboratorio/pages/actividades_screen.dart';
+import 'package:fultter_aplication_laboratorio/pages/camera_screen.dart';
+import 'package:fultter_aplication_laboratorio/pages/preview_picture_screen.dart';
+import 'package:fultter_aplication_laboratorio/pages/gallery_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../entity/actividad.dart';
 import '../services/database_helper.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
+import 'package:camera/camera.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -25,20 +28,17 @@ class _MyHomePageState extends State<MyHomePage> {
   _MyHomePageState() {
     Logger().i('Constructor ejecutado - mounted: $mounted');
   }
-  int _currentIndex = 0;
-  int _imageCounter = 1; // Local counter for images
+  int _imageCounter = 1;
   final DatabaseHelper _dbHelper = DatabaseHelper();
-  String imageUrl = 'https://picsum.photos/250?image=1'; // Initial image URL
-
-  final List<Widget> _screens = [
-    const MyHomePage(title: 'Flutter Home'),
-    const ListContent(),
-    const AboutUsScreen(),
-  ];
+  String imageUrl = 'https://picsum.photos/250?image=1';
+  String? _imagePath;
+  bool _isResetEnabled = false; // Variable para almacenar el estado de reinicio
 
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    final isResetEnabled = prefs.getBool('isResetEnabled') ?? false;
+    setState(() {
+      _isResetEnabled = prefs.getBool('isResetEnabled') ?? false;
+    });
   }
 
   @override
@@ -49,27 +49,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    Logger().i('didChangeDependencies ejecutado');
-  }
-
-  @override
   void setState(VoidCallback fn) {
     super.setState(fn);
     Logger().i('setState ejecutado');
-  }
-
-  @override
-  void didUpdateWidget(covariant MyHomePage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    Logger().i('didUpdateWidget ejecutado');
-  }
-
-  @override
-  void deactivate() {
-    super.deactivate();
-    Logger().i('deactivate ejecutado');
   }
 
   @override
@@ -78,44 +60,15 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
-  @override
-  void reassemble() {
-    super.reassemble();
-    Logger().i('reassemble ejecutado');
-  }
-
-  void _navigateBasedOnCounter() {
-    final counter = context.read<AppData>().counter;
-    if (counter % 2 == 0) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const ListContent()),
-      );
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const AboutUsScreen()),
-      );
-    }
-  }
-
-  void _navigateToListContent() {
-    Logger logger = Logger();
-    logger.i('Navigating to ListContent');
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ListContent()),
-    );
-  }
-
   Future<void> _getNewImage() async {
-    _imageCounter++; // Increment local image counter
+    _imageCounter++;
     final newImageUrl = 'https://picsum.photos/250?image=$_imageCounter';
     try {
       final response = await http.get(Uri.parse(newImageUrl));
       if (response.statusCode == 200) {
         setState(() {
           imageUrl = newImageUrl;
+          _imagePath = null;
         });
         await _dbHelper.insertActivity(
           Actividad(
@@ -124,15 +77,51 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         );
         Logger().i('Actividad registrada: Actualizó imagen');
-      } else {
-        setState(() {
-          imageUrl = ''; // Clear the image URL
-        });
       }
     } catch (e) {
-      setState(() {
-        imageUrl = ''; // Clear the image URL
-      });
+      Logger().e('Error al cargar imagen: $e');
+    }
+  }
+
+  Future<void> _captureImage() async {
+    try {
+      final cameras = await availableCameras();
+      final firstCamera = cameras.first;
+
+      final imagePath = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CameraScreen(camera: firstCamera),
+        ),
+      );
+
+      if (imagePath != null && context.mounted) {
+        setState(() {
+          _imagePath = imagePath;
+        });
+
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PreviewPictureScreen(imagePath: imagePath),
+          ),
+        );
+
+        await _dbHelper.insertActivity(
+          Actividad(
+            fecha: DateTime.now(),
+            nombre: 'Capturó imagen: $imagePath',
+          ),
+        );
+        Logger().i('Actividad registrada: Capturó imagen');
+      }
+    } catch (e) {
+      Logger().e('Error al abrir la cámara: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error al abrir la cámara: $e')));
+      }
     }
   }
 
@@ -164,9 +153,6 @@ class _MyHomePageState extends State<MyHomePage> {
               title: const Text('Inicio'),
               onTap: () {
                 Navigator.pop(context);
-                setState(() {
-                  _currentIndex = 0;
-                });
               },
             ),
             ListTile(
@@ -221,145 +207,165 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Galería'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const GalleryScreen(),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
-      body: Center(
-        child: Card(
-          elevation: 4,
-          margin: const EdgeInsets.all(16.0),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                imageUrl.isNotEmpty
-                    ? Image.network(
-                      imageUrl,
-                      width: 250,
-                      height: 250,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Center(
-                          child: Text(
-                            'Failed to load image',
-                            style: TextStyle(color: Colors.red),
-                          ),
-                        );
-                      },
-                    )
-                    : const Center(
-                      child: Text(
-                        'No image available',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _getNewImage,
-                  child: const Text('Update Image'),
-                ),
-                const SizedBox(height: 16),
-                SvgPicture.asset(
-                  "Assets/Icons/Apple.svg",
-                  semanticsLabel: 'Dart Logo',
-                  height: 100,
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Flutter es un framework de Google para crear aplicaciones multiplataforma con una sola base de código.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Contador: ${appData.counter}',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          appData.increment();
-                          await _dbHelper.insertActivity(
-                            Actividad(
-                              fecha: DateTime.now(),
-                              nombre:
-                                  'Incrementó contador a ${appData.counter}',
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView(
+          children: [
+            Card(
+              elevation: 4,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _imagePath != null
+                      ? Image.file(
+                        File(_imagePath!),
+                        height: 300,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(
+                            child: Text(
+                              'Error al cargar la imagen',
+                              style: TextStyle(color: Colors.red),
                             ),
                           );
-                          logger.i('Actividad registrada: Incrementó contador');
                         },
-                        child: const Icon(Icons.add),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          appData.decrement();
-                          await _dbHelper.insertActivity(
-                            Actividad(
-                              fecha: DateTime.now(),
-                              nombre:
-                                  'Decrementó contador a ${appData.counter}',
+                      )
+                      : Image.network(
+                        imageUrl,
+                        height: 300,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(
+                            child: Text(
+                              'Error al cargar la imagen',
+                              style: TextStyle(color: Colors.red),
                             ),
                           );
-                          logger.i('Actividad registrada: Decrementó contador');
                         },
-                        child: const Icon(Icons.remove),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          final prefs = await SharedPreferences.getInstance();
-                          final isResetEnabled =
-                              prefs.getBool('isResetEnabled') ?? false;
-
-                          if (isResetEnabled) {
-                            appData.reset();
-                            await _dbHelper.insertActivity(
-                              Actividad(
-                                fecha: DateTime.now(),
-                                nombre:
-                                    'Reinició contador a ${appData.counter}',
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: _getNewImage,
+                                icon: const Icon(Icons.image),
+                                label: const Text('Imagen de Internet'),
                               ),
-                            );
-                            logger.i('Actividad registrada: Reinició contador');
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('El reinicio está deshabilitado'),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: _captureImage,
+                                icon: const Icon(Icons.camera_alt),
+                                label: const Text('Tomar Foto'),
                               ),
-                            );
-                          }
-                        },
-                        child: const Icon(Icons.refresh),
-                      ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Contador: ${appData.counter}',
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  appData.increment();
+                                  await _dbHelper.insertActivity(
+                                    Actividad(
+                                      fecha: DateTime.now(),
+                                      nombre:
+                                          'Incrementó contador a ${appData.counter}',
+                                    ),
+                                  );
+                                  logger.i(
+                                    'Actividad registrada: Incrementó contador',
+                                  );
+                                },
+                                child: const Icon(Icons.add),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  appData.decrement();
+                                  await _dbHelper.insertActivity(
+                                    Actividad(
+                                      fecha: DateTime.now(),
+                                      nombre:
+                                          'Decrementó contador a ${appData.counter}',
+                                    ),
+                                  );
+                                  logger.i(
+                                    'Actividad registrada: Decrementó contador',
+                                  );
+                                },
+                                child: const Icon(Icons.remove),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  if (_isResetEnabled) {
+                                    appData.reset();
+                                    await _dbHelper.insertActivity(
+                                      Actividad(
+                                        fecha: DateTime.now(),
+                                        nombre:
+                                            'Reinició contador a ${appData.counter}',
+                                      ),
+                                    );
+                                    logger.i(
+                                      'Actividad registrada: Reinició contador',
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'El reinicio está deshabilitado',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: const Icon(Icons.refresh),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _navigateBasedOnCounter,
-                        child: const Text('Ir a Pantalla'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToListContent,
-        tooltip: 'Ver Servicios de Modelado 3D',
-        child: const Icon(Icons.brush),
       ),
     );
   }

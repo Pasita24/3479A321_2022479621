@@ -42,7 +42,7 @@ dependencies:
   path: ^1.9.1
   path_provider: ^2.1.5
   http: ^1.2.2
-  camera: ^0.11.0+1
+  camera: ^0.10.5+2
 
 dev_dependencies:
   flutter_test:
